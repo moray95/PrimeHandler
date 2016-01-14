@@ -10,6 +10,7 @@ public:
   using size_type = typename std::vector<T>::size_type;
   bool is_prime(T x);
   const std::vector<T>& get_primes(T max);
+  size_type remove_greater_then(T n);
 
 private:
   std::vector<T> primes_{2};
