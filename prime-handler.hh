@@ -7,6 +7,7 @@ class PrimeHandler
 {
 
 public:
+  using size_type = typename std::vector<T>::size_type;
   bool is_prime(T x);
   const std::vector<T>& get_primes(T max);
 

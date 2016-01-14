@@ -4,13 +4,14 @@
 
 #include "prime-handler.hh"
 
+// O(n * π(n)) -- O(n^2/log(n)) / O(log(n))
 template <typename T>
 bool PrimeHandler<T>::is_prime(T x)
 {
   if (x == 0 || x == 1)
     return false;
   add_primes_(x);
-  return !is_divisible_(x);
+  return contains_(x);
 }
 
 template <typename T>
@@ -20,6 +21,7 @@ const std::vector<T>& PrimeHandler<T>::get_primes(T max)
   return primes_;
 }
 
+// O(n * π(n))
 template <typename T>
 void PrimeHandler<T>::add_primes_(T max)
 {
@@ -51,12 +53,17 @@ T PrimeHandler<T>::max_prime_()
   return primes_.back();
 }
 
+// O(π(n))
 template <typename T>
 bool PrimeHandler<T>::is_divisible_(T x)
 {
-  for (long i = 0; i < primes_.size() && primes_[i] < x; i++)
+  size_type size = primes_.size();
+  for (size_type i = 0; i < size; i++)
   {
-    if (x % primes_[i] == 0)
+    T prime = primes_[i];
+    if (prime >= x)
+      break;
+    if (x % prime == 0)
       return true;
   }
   return false;
