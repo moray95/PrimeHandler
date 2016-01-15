@@ -39,6 +39,30 @@ auto PrimeHandler<T>::remove_greater_then(T n) -> size_type
   return count;
 }
 
+template <typename T>
+auto PrimeHandler<T>::factorize(T n) -> std::vector<PrimeFactor<T>>
+{
+  add_primes_(n);
+  std::vector<PrimeFactor<T>> factors;
+  for (auto prime : primes_)
+  {
+    if (n == 0)
+      break;
+    PrimeFactor<T> factor;
+    factor.base = prime;
+    while (n > 0 && n % prime == 0)
+    {
+      factor.exponent++;
+      n /= prime;
+    }
+    if (factor.exponent > 0)
+    {
+      factors.push_back(std::move(factor));
+    }
+  }
+  return factors;
+}
+
 // O(n * π(n))
 template <typename T>
 void PrimeHandler<T>::add_primes_(T max)

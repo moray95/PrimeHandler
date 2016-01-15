@@ -2,6 +2,13 @@
 #include <vector>
 #include <cstdint>
 
+template <typename T>
+struct PrimeFactor
+{
+  T base = 0;
+  T exponent = 0;
+};
+
 template <typename T = uintmax_t>
 class PrimeHandler
 {
@@ -11,6 +18,7 @@ public:
   bool is_prime(T x);
   const std::vector<T>& get_primes(T max);
   size_type remove_greater_then(T n);
+  std::vector<PrimeFactor<T>> factorize(T n);
 
 private:
   std::vector<T> primes_{2};
