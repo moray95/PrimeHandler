@@ -4,7 +4,6 @@
 
 #include "prime-handler.hh"
 
-// O(nˆ3/2 / log(n)) --- O(√n / log(n))
 template <typename T>
 bool PrimeHandler<T>::is_prime(const T& x)
 {
@@ -42,18 +41,25 @@ auto PrimeHandler<T>::remove_greater_then(const T& n) -> size_type
   return count;
 }
 
+
+template <typename T>
+auto PrimeHandler<T>::cache_up_to(const T& n) -> size_type
+{
+  auto old_size = primes_.size();
+  add_primes_(estimate_prime_at_index_(n));
+  return primes_.size() - old_size;
+}
+
 template <typename T>
 auto PrimeHandler<T>::factorize(T n) -> std::vector<PrimeFactor<T>>
 {
-  add_primes_(n);
   std::vector<PrimeFactor<T>> factors;
-  for (auto prime : primes_)
+  for (size_type i = 0; n > 1; i++)
   {
-    if (n == 0)
-      break;
+    auto prime = prime_at_index(i);
     PrimeFactor<T> factor;
     factor.base = prime;
-    while (n > 0 && n % prime == 0)
+    while (n > 1 && n % prime == 0)
     {
       factor.exponent++;
       n /= prime;
@@ -66,11 +72,22 @@ auto PrimeHandler<T>::factorize(T n) -> std::vector<PrimeFactor<T>>
   return factors;
 }
 
-// O(n * π(n))
+template <typename T>
+const T&  PrimeHandler<T>::prime_at_index(size_type n)
+{
+  if (n < primes_.size())
+    return primes_[n];
+  add_primes_(estimate_prime_at_index_(n));
+  while (primes_.size() <= n)
+  {
+    add_primes_(last_seen_ + 10);
+  }
+  return primes_[n];
+}
+
 template <typename T>
 void PrimeHandler<T>::add_primes_(const T& max)
 {
-
   primes_.reserve(1.25506 * max / log(max));
   T min = last_seen_;
 
@@ -79,7 +96,7 @@ void PrimeHandler<T>::add_primes_(const T& max)
 
   for (T i = min; i <= max; i += 2)
   {
-    if (!is_divisible_(i, sqrt(i)))
+    if (!is_divisible_(i))
     {
       primes_.push_back(i);
     }
@@ -100,7 +117,7 @@ bool PrimeHandler<T>::is_divisible_(const T& x, const T& root) const
   size_type size = primes_.size();
   for (size_type i = 0; i < size; i++)
   {
-    T prime = primes_[i];
+    const T& prime = primes_[i];
     if (prime > root)
       break;
     if (x % prime == 0)
@@ -112,5 +129,30 @@ bool PrimeHandler<T>::is_divisible_(const T& x, const T& root) const
 template <typename T>
 bool PrimeHandler<T>::is_divisible_(const T& x) const
 {
-  return is_divisible_(x, sqrt(x));
+  return is_divisible_(x, sqrt(x) + 1);
+}
+
+template <typename T>
+T PrimeHandler<T>::estimate_prime_at_index_(size_type n)
+{
+  std::vector<T> first_prime{0, 2, 3, 5, 7, 11};
+  if (n < first_prime.size())
+    return first_prime[n];
+
+  double logn = log(n);
+  double loglogn = log(logn);
+
+  if (n >= 688383)
+  {
+    return n * (logn + loglogn - 1.0 + (loglogn - 2.00) / logn);
+  }
+  if (n >= 178974)
+  {
+    return n * (logn + logn - 1.0 + (loglogn - 1.95) / logn);
+  }
+  if (n >=  39017)
+  {
+    return n * (logn + loglogn - 0.9484);
+  }
+  return n * (logn  +  0.6000 * loglogn);
 }
